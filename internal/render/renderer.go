@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/Lunarisnia/stream-demo/internal/client"
@@ -26,16 +27,14 @@ func StartRenderer() {
 	if err != nil {
 		panic(err)
 	}
+	chatService, err := client.Connect()
+	if err != nil {
+		panic(err)
+	}
 
 	rendering := false
 	running := true
 	for running {
-		if !rendering {
-			go func() {
-				client.Connect(window, surface)
-			}()
-			rendering = true
-		}
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent: // NOTE: Please use `*sdl.QuitEvent` for `v0.4.x` (current version).
@@ -47,6 +46,32 @@ func StartRenderer() {
 				if keyEvent.Keysym.Scancode == sdl.SCANCODE_S && keyEvent.Type == sdl.KEYDOWN {
 					surface.FillRect(nil, 0)
 					window.UpdateSurface()
+				}
+				if keyEvent.Keysym.Scancode == sdl.SCANCODE_R && keyEvent.Type == sdl.KEYDOWN {
+					if !rendering {
+						surface.FillRect(nil, 0)
+						window.UpdateSurface()
+						fmt.Println("RAASKDJASDKLj")
+						go func() {
+							err := client.Render(chatService, window, surface, func() {
+								rendering = false
+							})
+							if err != nil {
+								fmt.Println(err)
+							}
+						}()
+						rendering = true
+					}
+				}
+				if keyEvent.Keysym.Scancode == sdl.SCANCODE_H && keyEvent.Type == sdl.KEYDOWN {
+					if !rendering {
+						surface.FillRect(nil, 0)
+						window.UpdateSurface()
+						go client.Render(chatService, window, surface, func() {
+							rendering = false
+						})
+						rendering = true
+					}
 				}
 			}
 		}

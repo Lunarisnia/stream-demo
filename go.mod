@@ -1,10 +1,11 @@
 module github.com/Lunarisnia/stream-demo
 
-go 1.22.7
+go 1.23.2
 
-toolchain go1.22.9
+toolchain go1.23.3
 
 require (
+	github.com/lunarisnia/yacg v0.0.0-20241201115030-514d2d2d814f
 	github.com/veandco/go-sdl2 v0.4.40
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2

@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"math/rand"
-	"time"
 
 	"github.com/Lunarisnia/stream-demo/chatservice"
+	"github.com/lunarisnia/yacg"
+	"github.com/lunarisnia/yacg/color"
 )
 
 type chatServiceServer struct {
@@ -23,20 +23,16 @@ func (c *chatServiceServer) Ping(ctx context.Context, in *chatservice.PingMessag
 }
 
 func (c *chatServiceServer) Render(renderOption *chatservice.RenderOption, stream chatservice.ChatService_RenderServer) error {
-	for i := range 100 {
-		err := stream.Send(&chatservice.Pixel{
-			X: int32(i),
-			Y: int32(i),
+	yacg.PathTrace(10, 400, func(x int, y int, c *color.RGB) {
+		stream.Send(&chatservice.Pixel{
+			X: int32(x),
+			Y: int32(y),
 			Color: &chatservice.Color{
-				R: int32(rand.Intn(256)),
-				G: int32(rand.Intn(256)),
-				B: int32(rand.Intn(256)),
+				R: int32(c.Red),
+				G: int32(c.Green),
+				B: int32(c.Blue),
 			},
 		})
-		if err != nil {
-			return err
-		}
-		time.Sleep(50 * time.Millisecond)
-	}
+	})
 	return nil
 }

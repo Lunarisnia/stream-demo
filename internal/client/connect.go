@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/Lunarisnia/stream-demo/chatservice"
@@ -18,26 +17,27 @@ func drawPixel(s *sdl.Surface, x int, y int, color *sdl.Color) {
 	s.FillRect(&rect, pixel)
 }
 
-func Connect(window *sdl.Window, surface *sdl.Surface) error {
+func Connect() (chatservice.ChatServiceClient, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	conn, err := grpc.NewClient("127.0.0.1:3009", opts...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer conn.Close()
 
 	cs := chatservice.NewChatServiceClient(conn)
-	response, err := cs.Ping(context.Background(), nil)
-	if err != nil {
-		return err
-	}
-	fmt.Println("Server:", response.Message)
 
+	return cs, err
+}
+
+func Render(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.Surface, callback func()) error {
 	stream, err := cs.Render(context.Background(), &chatservice.RenderOption{
 		Width:  100,
 		Height: 100,
 	})
+	if err != nil {
+		return err
+	}
 	for {
 		pixel, err := stream.Recv()
 		if err == io.EOF {
@@ -54,5 +54,7 @@ func Connect(window *sdl.Window, surface *sdl.Surface) error {
 		})
 		window.UpdateSurface()
 	}
+	callback()
+
 	return nil
 }
