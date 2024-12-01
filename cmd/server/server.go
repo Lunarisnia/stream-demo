@@ -24,7 +24,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/render", func(c *gin.Context) {
 		pixels := make([]Pixel, 0)
-		yacg.PathTrace(10, 400, func(x int, y int, c *color.RGB) {
+		yacg.PathTrace(500, 400, func(x int, y int, c *color.RGB) {
 			pixels = append(pixels, Pixel{
 				X: x,
 				Y: y,

@@ -23,7 +23,7 @@ func (c *chatServiceServer) Ping(ctx context.Context, in *chatservice.PingMessag
 }
 
 func (c *chatServiceServer) Render(renderOption *chatservice.RenderOption, stream chatservice.ChatService_RenderServer) error {
-	yacg.PathTrace(10, 400, func(x int, y int, c *color.RGB) {
+	yacg.PathTrace(500, 400, func(x int, y int, c *color.RGB) {
 		stream.Send(&chatservice.Pixel{
 			X: int32(x),
 			Y: int32(y),
