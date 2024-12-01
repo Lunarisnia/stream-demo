@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "github.com/Lunarisnia/stream-demo/chatservice";
+
+package chatservice;
+
+service ChatService {
+  rpc Ping(PingMessage) returns (PingResponse) {}
+  rpc Render(RenderOption) returns (stream Pixel) {}
+}
+
+message PingMessage {}
+
+message PingResponse { string message = 1; }
+
+message RenderOption {
+  int32 width = 1;
+  int32 height = 2;
+}
+
+message Pixel {
+  int32 x = 1;
+  int32 y = 2;
+  Color color = 3;
+}
+
+message Color {
+  int32 r = 1;
+  int32 g = 2;
+  int32 b = 3;
+}
