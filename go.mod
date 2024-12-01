@@ -5,6 +5,7 @@ go 1.22.7
 toolchain go1.22.9
 
 require (
+	github.com/veandco/go-sdl2 v0.4.40
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2
 )
