@@ -51,7 +51,6 @@ func StartRenderer() {
 					if !rendering {
 						surface.FillRect(nil, 0)
 						window.UpdateSurface()
-						fmt.Println("RAASKDJASDKLj")
 						go func() {
 							err := client.Render(chatService, window, surface, func() {
 								rendering = false
