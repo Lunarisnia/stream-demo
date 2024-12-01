@@ -2,8 +2,10 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/Lunarisnia/stream-demo/chatservice"
@@ -64,19 +66,47 @@ func Render(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.S
 	return nil
 }
 
+type Color struct {
+	R int `json:"r"`
+	G int `json:"g"`
+	B int `json:"b"`
+}
+
+type Data struct {
+	Data []Pixel `json:"data"`
+}
+
+type Pixel struct {
+	X     int   `json:"x"`
+	Y     int   `json:"y"`
+	Color Color `json:"color"`
+}
+
 func RenderSync(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.Surface, callback func()) error {
 	start := time.Now()
 	fmt.Println("Downloading Generated Image")
-	response, err := cs.RenderSync(context.Background(), &chatservice.RenderOption{
-		Width:  100,
-		Height: 100,
-	})
+	client := &http.Client{}
+	body := Data{}
+
+	request, err := http.NewRequest("GET", "http://127.0.0.1:8080/render", nil)
 	if err != nil {
 		return err
 	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	err = json.NewDecoder(response.Body).Decode(&body)
+	if err != nil {
+		return err
+	}
+
 	renderStart := time.Now()
 	fmt.Printf("Download Took: %v. Starting to render...\n", time.Since(start))
-	for _, pixel := range response.Pixels {
+	for _, pixel := range body.Data {
 		drawPixel(surface, int(pixel.X), int(pixel.Y), &sdl.Color{
 			R: uint8(pixel.Color.R),
 			G: uint8(pixel.Color.G),
