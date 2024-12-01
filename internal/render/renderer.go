@@ -47,7 +47,7 @@ func StartRenderer() {
 					surface.FillRect(nil, 0)
 					window.UpdateSurface()
 				}
-				if keyEvent.Keysym.Scancode == sdl.SCANCODE_R && keyEvent.Type == sdl.KEYDOWN {
+				if keyEvent.Keysym.Scancode == sdl.SCANCODE_G && keyEvent.Type == sdl.KEYDOWN {
 					if !rendering {
 						surface.FillRect(nil, 0)
 						window.UpdateSurface()
@@ -67,7 +67,7 @@ func StartRenderer() {
 					if !rendering {
 						surface.FillRect(nil, 0)
 						window.UpdateSurface()
-						go client.Render(chatService, window, surface, func() {
+						go client.RenderSync(chatService, window, surface, func() {
 							rendering = false
 						})
 						rendering = true
@@ -76,6 +76,6 @@ func StartRenderer() {
 			}
 		}
 
-		sdl.Delay(33)
+		sdl.Delay(1)
 	}
 }

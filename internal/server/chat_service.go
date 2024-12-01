@@ -36,3 +36,19 @@ func (c *chatServiceServer) Render(renderOption *chatservice.RenderOption, strea
 	})
 	return nil
 }
+
+func (c *chatServiceServer) RenderSync(ctx context.Context, renderOption *chatservice.RenderOption) (*chatservice.RenderSyncResponse, error) {
+	pixels := make([]*chatservice.Pixel, 0)
+	yacg.PathTrace(10, 400, func(x int, y int, c *color.RGB) {
+		pixels = append(pixels, &chatservice.Pixel{
+			X: int32(x),
+			Y: int32(y),
+			Color: &chatservice.Color{
+				R: int32(c.Red),
+				G: int32(c.Green),
+				B: int32(c.Blue),
+			},
+		})
+	})
+	return &chatservice.RenderSyncResponse{Pixels: pixels}, nil
+}

@@ -7,6 +7,7 @@ package chatservice;
 service ChatService {
   rpc Ping(PingMessage) returns (PingResponse) {}
   rpc Render(RenderOption) returns (stream Pixel) {}
+  rpc RenderSync(RenderOption) returns (RenderSyncResponse) {}
 }
 
 message PingMessage {}
@@ -29,3 +30,5 @@ message Color {
   int32 g = 2;
   int32 b = 3;
 }
+
+message RenderSyncResponse { repeated Pixel pixels = 1; }

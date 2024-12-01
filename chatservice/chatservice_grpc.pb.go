@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChatService_Ping_FullMethodName   = "/chatservice.ChatService/Ping"
-	ChatService_Render_FullMethodName = "/chatservice.ChatService/Render"
+	ChatService_Ping_FullMethodName       = "/chatservice.ChatService/Ping"
+	ChatService_Render_FullMethodName     = "/chatservice.ChatService/Render"
+	ChatService_RenderSync_FullMethodName = "/chatservice.ChatService/RenderSync"
 )
 
 // ChatServiceClient is the client API for ChatService service.
@@ -29,6 +30,7 @@ const (
 type ChatServiceClient interface {
 	Ping(ctx context.Context, in *PingMessage, opts ...grpc.CallOption) (*PingResponse, error)
 	Render(ctx context.Context, in *RenderOption, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Pixel], error)
+	RenderSync(ctx context.Context, in *RenderOption, opts ...grpc.CallOption) (*RenderSyncResponse, error)
 }
 
 type chatServiceClient struct {
@@ -68,12 +70,23 @@ func (c *chatServiceClient) Render(ctx context.Context, in *RenderOption, opts .
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ChatService_RenderClient = grpc.ServerStreamingClient[Pixel]
 
+func (c *chatServiceClient) RenderSync(ctx context.Context, in *RenderOption, opts ...grpc.CallOption) (*RenderSyncResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RenderSyncResponse)
+	err := c.cc.Invoke(ctx, ChatService_RenderSync_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility.
 type ChatServiceServer interface {
 	Ping(context.Context, *PingMessage) (*PingResponse, error)
 	Render(*RenderOption, grpc.ServerStreamingServer[Pixel]) error
+	RenderSync(context.Context, *RenderOption) (*RenderSyncResponse, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -89,6 +102,9 @@ func (UnimplementedChatServiceServer) Ping(context.Context, *PingMessage) (*Ping
 }
 func (UnimplementedChatServiceServer) Render(*RenderOption, grpc.ServerStreamingServer[Pixel]) error {
 	return status.Errorf(codes.Unimplemented, "method Render not implemented")
+}
+func (UnimplementedChatServiceServer) RenderSync(context.Context, *RenderOption) (*RenderSyncResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenderSync not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 func (UnimplementedChatServiceServer) testEmbeddedByValue()                     {}
@@ -140,6 +156,24 @@ func _ChatService_Render_Handler(srv interface{}, stream grpc.ServerStream) erro
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type ChatService_RenderServer = grpc.ServerStreamingServer[Pixel]
 
+func _ChatService_RenderSync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenderOption)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).RenderSync(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_RenderSync_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).RenderSync(ctx, req.(*RenderOption))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -150,6 +184,10 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _ChatService_Ping_Handler,
+		},
+		{
+			MethodName: "RenderSync",
+			Handler:    _ChatService_RenderSync_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

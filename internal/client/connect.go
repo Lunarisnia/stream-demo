@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"time"
 
 	"github.com/Lunarisnia/stream-demo/chatservice"
 	"github.com/veandco/go-sdl2/sdl"
@@ -38,6 +40,8 @@ func Render(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.S
 	if err != nil {
 		return err
 	}
+	renderStart := time.Now()
+	fmt.Println("Starting to render...")
 	for {
 		pixel, err := stream.Recv()
 		if err == io.EOF {
@@ -54,7 +58,34 @@ func Render(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.S
 		})
 		window.UpdateSurface()
 	}
+	fmt.Printf("Rendering took: %v\n", time.Since(renderStart))
 	callback()
 
+	return nil
+}
+
+func RenderSync(cs chatservice.ChatServiceClient, window *sdl.Window, surface *sdl.Surface, callback func()) error {
+	start := time.Now()
+	fmt.Println("Downloading Generated Image")
+	response, err := cs.RenderSync(context.Background(), &chatservice.RenderOption{
+		Width:  100,
+		Height: 100,
+	})
+	if err != nil {
+		return err
+	}
+	renderStart := time.Now()
+	fmt.Printf("Download Took: %v. Starting to render...\n", time.Since(start))
+	for _, pixel := range response.Pixels {
+		drawPixel(surface, int(pixel.X), int(pixel.Y), &sdl.Color{
+			R: uint8(pixel.Color.R),
+			G: uint8(pixel.Color.G),
+			B: uint8(pixel.Color.B),
+			A: 255,
+		})
+		window.UpdateSurface()
+	}
+	fmt.Printf("Rendering took: %v\n", time.Since(renderStart))
+	callback()
 	return nil
 }
